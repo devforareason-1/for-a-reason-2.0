@@ -35,6 +35,12 @@ test('CSP permits the enquiry endpoint and its Apps Script redirect target', () 
   assert(csp.includes('https://script.googleusercontent.com'), 'Apps Script redirect origin missing');
 });
 
+test('CSP allows Cloudflare Web Analytics, which the privacy notice discloses', () => {
+  assert(/script-src[^;]*https:\/\/static\.cloudflareinsights\.com/.test(csp), 'analytics script blocked');
+  assert(/connect-src[^;]*https:\/\/cloudflareinsights\.com/.test(csp), 'analytics beacon blocked');
+  assert(read('privacy.html').includes('Cloudflare Web Analytics'), 'privacy notice must disclose analytics');
+});
+
 // Print current hashes: PRINT_HASHES=1 node tests/headers.test.cjs
 if (process.env.PRINT_HASHES) {
   const html = read('404.html');
