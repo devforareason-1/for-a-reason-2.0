@@ -28,11 +28,20 @@ const headersFor = url => Object.fromEntries(rules.filter(r => matches(r.pattern
   .filter(([name]) => name !== 'Strict-Transport-Security')
   .map(([name, value]) => [name, value.replace(/;\s*upgrade-insecure-requests/, '')]));
 
+const isFile = file => file.startsWith(root + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile();
+
 http.createServer((req, res) => {
-  let url = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  const requested = new URL(req.url, 'http://localhost');
+  let url = decodeURIComponent(requested.pathname);
+  // Mirror Cloudflare Workers assets html_handling "auto-trailing-slash": /x.html -> /x, /index.html -> /.
+  if (url.endsWith('.html') && isFile(path.join(root, url))) {
+    res.writeHead(307, { Location: url.replace(/(index)?\.html$/, '') + requested.search });
+    return res.end();
+  }
   if (url.endsWith('/')) url += 'index.html';
+  else if (!path.extname(url) && isFile(path.join(root, url + '.html'))) url += '.html';
   const file = path.join(root, url);
-  const found = file.startsWith(root + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile() && !url.endsWith('/_headers');
+  const found = isFile(file) && !url.endsWith('/_headers');
   const served = found ? file : path.join(root, '404.html');
   res.writeHead(found ? 200 : 404, { ...headersFor(url), 'Content-Type': types[path.extname(served)] || 'application/octet-stream' });
   fs.createReadStream(served).pipe(res);

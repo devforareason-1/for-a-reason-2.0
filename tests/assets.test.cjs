@@ -17,3 +17,27 @@ for (const page of ['index.html', 'privacy.html', '404.html']) {
     }
   });
 }
+
+test('internal links use clean URLs served by Workers assets (no .html redirect hops)', () => {
+  for (const page of ['index.html', 'privacy.html']) {
+    const html = fs.readFileSync(path.join(root, page), 'utf8');
+    const internal = [...html.matchAll(/href="([^"]+)"/g)].map(m => m[1]).filter(url => !/^(https?:|mailto:|tel:|#|assets\/)/.test(url));
+    for (const url of internal) assert(!/\.html\b/.test(url), `${page}: ${url} should be a clean URL`);
+  }
+});
+
+test('canonical URLs match sitemap entries', () => {
+  const sitemap = fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8');
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+  for (const page of ['index.html', 'privacy.html']) {
+    const canonical = fs.readFileSync(path.join(root, page), 'utf8').match(/rel="canonical" href="([^"]+)"/)[1];
+    assert(locs.includes(canonical), `${page} canonical ${canonical} missing from sitemap`);
+  }
+});
+
+test('wrangler config deploys public/ as static assets with the custom 404 page', () => {
+  const config = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'wrangler.jsonc'), 'utf8').replace(/^\s*\/\/.*$/gm, ''));
+  assert.equal(path.normalize(config.assets.directory), path.normalize('./public'));
+  assert.equal(config.assets.not_found_handling, '404-page');
+  assert(!config.main, 'static site: no Worker script expected');
+});

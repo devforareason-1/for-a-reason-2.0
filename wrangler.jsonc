@@ -1,0 +1,14 @@
+// Cloudflare Workers Builds runs `npx wrangler deploy`, which reads this file.
+// Static site: no Worker script; only public/ is uploaded and served.
+{
+  // Must match the Worker name in the Cloudflare dashboard, or the build fails.
+  "name": "kashtajeevi",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./public",
+    // Unknown paths get public/404.html with a real 404 status.
+    "not_found_handling": "404-page",
+    // /privacy serves privacy.html; /privacy.html redirects to /privacy.
+    "html_handling": "auto-trailing-slash"
+  }
+}

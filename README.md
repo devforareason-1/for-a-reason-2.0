@@ -1,8 +1,11 @@
 # For a Reason website
 
-Buildless HTML, CSS and JavaScript. **Deploy only `public/`** (set it as the host's publish/output directory, no build command). Everything outside it is tooling and source material and must not be served.
+Buildless HTML, CSS and JavaScript, hosted on **Cloudflare Workers static assets**. Workers Builds runs `npx wrangler deploy`, and `wrangler.jsonc` tells it to upload only `public/`. Everything outside `public/` is tooling and source material and is never served. Pushes to `main` deploy to production; other branches get preview versions.
+
+URLs are extensionless: `/privacy` serves `privacy.html` and `/privacy.html` redirects to it. Link to pages without `.html`; `npm test` enforces this.
 
 ```
+wrangler.jsonc              Cloudflare deploy config (Worker name, assets = public/, 404 page)
 public/                     deploy root
   index.html  privacy.html  404.html
   _headers  robots.txt  sitemap.xml
@@ -19,7 +22,7 @@ scripts/serve.mjs           local preview server for public/
 tests/                      node:test suites (no dependencies)
 ```
 
-Preview with any static server pointed at `public/`, with `npm start` (dependency-free; applies `public/_headers` and returns a real 404 status). Opening the HTML files directly also works for a quick look.
+Preview with any static server pointed at `public/`, with `npm start` (dependency-free; mirrors production routing, applies `public/_headers` and returns a real 404 status). Opening files directly is not supported because links use root-relative clean URLs.
 
 Run checks with `npm test` (or `node --test tests/*.cjs`). Enquiry tests use local mocks; they send no enquiries and do not verify Google authorization, web-app permissions, CORS or production hosting.
 
