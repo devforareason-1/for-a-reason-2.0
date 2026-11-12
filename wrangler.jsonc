@@ -2,7 +2,7 @@
 // Static site: no Worker script; only public/ is uploaded and served.
 {
   // Must match the Worker name in the Cloudflare dashboard, or the build fails.
-  "name": "kashtajeevi",
+  "name": "for-a-reason",
   "compatibility_date": "2025-09-01",
   "assets": {
     "directory": "./public",
