@@ -2,6 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
+const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 
 function receiver() {
@@ -18,7 +19,7 @@ function receiver() {
     LockService: { getScriptLock: () => ({ waitLock: () => { locked = true; }, hasLock: () => locked, releaseLock: () => { locked = false; } }) },
     SpreadsheetApp: { openById: () => ({ getSheetByName: () => sheet }), flush: () => {} }, console
   });
-  vm.runInContext(fs.readFileSync('google-sheets/Code.gs', 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'google-sheets', 'Code.gs'), 'utf8'), context);
   return { post: p => context.doPost({ parameter: p }), rows, locked: () => locked };
 }
 const valid = () => ({ requestId: randomUUID(), name: 'Test business', email: 'test@example.com', phone: '', needs: 'Website, CRM', msg: 'A test brief', engagement: 'One-time project', budget: '₹25,000–₹50,000' });
@@ -75,7 +76,7 @@ function client({ endpoint = '', fetchImpl = async () => ({ ok: false }) } = {})
     getAll() { return []; }
   }
   const context = vm.createContext({ document: doc, window: { FAR_CONFIG: { enquiryEndpoint: endpoint } }, matchMedia: () => ({ matches: false, addEventListener() {} }), FormData: Data, fetch: fetchImpl, crypto: { randomUUID }, URLSearchParams, AbortController, setTimeout, clearTimeout, navigator: {} });
-  vm.runInContext(fs.readFileSync('assets/site.js', 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'public', 'assets', 'js', 'site.js'), 'utf8'), context);
   element('name').value = 'Test visitor';
   element('email').value = 'visitor@example.com';
   return { element, button, submit: () => form.events.submit[0]({ preventDefault() {} }) };

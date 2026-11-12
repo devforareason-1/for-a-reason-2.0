@@ -1,0 +1,9 @@
+{
+  "name": "for-a-reason-site",
+  "private": true,
+  "description": "Buildless static site. Deploy the public/ directory.",
+  "scripts": {
+    "test": "node --test tests/*.cjs",
+    "start": "node scripts/serve.mjs"
+  }
+}

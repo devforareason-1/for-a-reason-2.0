@@ -1,0 +1,6 @@
+# LF everywhere: CSP hashes for inline blocks in public/404.html depend on exact bytes.
+* text=auto eol=lf
+*.woff2 binary
+*.png binary
+*.ico binary
+*.webp binary

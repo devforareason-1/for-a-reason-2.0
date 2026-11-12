@@ -1,17 +1,29 @@
 # For a Reason website
 
-Buildless HTML, CSS and JavaScript. Open `index.html` for a local preview or serve this directory through a static HTTP host. No dependency installation is required.
+Buildless HTML, CSS and JavaScript. **Deploy only `public/`** (set it as the host's publish/output directory, no build command). Everything outside it is tooling and source material and must not be served.
 
-- `index.html`: homepage content and portfolio references.
-- `privacy.html`: enquiry privacy information; review against actual operating practices before launch.
-- `assets/site.css`: shared design and responsive layouts.
-- `assets/site.js`: navigation, portfolio filters and enquiry handling.
-- `assets/particles.js`: the retained particle wordmark and motion controls.
-- `assets/config.js`: public enquiry endpoint configuration.
-- `assets/work/`: existing owner-provided portfolio reference images, externalised as WebP files.
-- `google-sheets/SETUP.md`: activate the Google Sheets receiver in your own account.
+```
+public/                     deploy root
+  index.html  privacy.html  404.html
+  _headers  robots.txt  sitemap.xml
+  assets/
+    css/site.css            base styles, then editorial overrides (one file, order matters)
+    js/site.js              navigation, portfolio filters, enquiry form
+    js/particles.js         particle wordmark, parallax, "Pause motion"
+    js/config.js            public enquiry endpoint (served no-cache)
+    fonts/  img/  work/     Inter + JetBrains Mono, icons/OG/wordmark, portfolio WebP
+google-sheets/              Apps Script receiver (Code.gs) and SETUP.md
+content/projects.json       portfolio data reference (not loaded by the page)
+brand/                      unused logo variants kept as source material
+scripts/serve.mjs           local preview server for public/
+tests/                      node:test suites (no dependencies)
+```
 
-Run checks with `node --test tests/enquiries.test.cjs`. These use local mocks; they send no enquiries and do not verify Google authorization, web-app permissions, CORS or production hosting.
+Preview with any static server pointed at `public/`, with `npm start` (dependency-free; applies `public/_headers` and returns a real 404 status). Opening the HTML files directly also works for a quick look.
+
+Run checks with `npm test` (or `node --test tests/*.cjs`). Enquiry tests use local mocks; they send no enquiries and do not verify Google authorization, web-app permissions, CORS or production hosting.
+
+`public/_headers` carries a Content-Security-Policy that allows the inline style and script in `404.html` by SHA-256 hash. After editing either block, run `PRINT_HASHES=1 node tests/headers.test.cjs` and update the hashes; `npm test` fails until they match. `.gitattributes` pins LF line endings so the hashes stay stable on every platform.
 
 ## Content still needing owner evidence
 
@@ -27,4 +39,4 @@ Add verified founder/team names, responsibilities and approved photos before add
 4. Check real iOS/Android devices, virtual keyboards, zoom/reflow, keyboard navigation and a screen reader.
 5. Verify production redirects, HTTPS, security/cache headers, social preview image, sitemap and custom 404 status. No performance score is claimed by local source checks.
 
-Versioned CSS/JS URLs allow this update to replace previously cached files. `_headers` now uses a one-day asset cache and revalidates endpoint configuration. When deploying changes to a host with an older immutable-cache policy, purge its existing cached assets as needed.
+Versioned CSS/JS URLs allow this update to replace previously cached files. `public/_headers` uses a one-day asset cache and revalidates endpoint configuration. When deploying changes to a host with an older immutable-cache policy, purge its existing cached assets as needed.
